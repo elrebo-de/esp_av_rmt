@@ -4,11 +4,11 @@ We create a remote controller to power on/off
 * the PANASONIC TV and 
 * the YAMAHA Audio Receiver 
 
-with a single button click
+with a button click
 and choose the right settings for
-* watching TV,
-* watching Apple TV or
-* listening to the Radio.
+* watching TV (SINGLE CLICK),
+* watching Apple TV (DOUBLE CLICK) or
+* listening to the Radio (LONG CLICK).
 
 ## Hardware
 to be controlled:
@@ -19,7 +19,7 @@ to be controlled:
 
 for the Remote Controller:
 
-* ESP-C3 Supermini
+* ESP-C3 Supermini or M5 ATOM LITE ESP32 and optional M5 Tailbat Battery
 * seeed Grove IR sender
 
 ## Build and Flash

@@ -151,13 +151,14 @@ extern "C" void app_main(void)
     /* Initialize RmtIr class */
     ESP_LOGI(tag, "RmtIr");
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
-    rmtIr->setGpioPins(4,0); // set the GPIO pins
+    //rmtIr->setGpioPins(4,0); // set the GPIO pins for ESP32C3 Supermini
+    rmtIr->setGpioPins(32,0); // set the GPIO pins for M5 ATOM LITE
     rmtIr->initialize(); // initialize RMT IR
 
     GenericButton onBoardButton(
 	    std::string("onBoardButton"),
-	    /* M5 Atom Lite */
-	    (gpio_num_t) 9, // GPIO
+	    (gpio_num_t) 39, // GPIO for M5 Atom Lite
+	    //(gpio_num_t) 9, // GPIO for ESP32C3 Supermini
 	    0, // active = DOWN
 	    true, // pull disabled - M5 Atom does not support internal PU/PD on this gpio
 	    std::string("GPIO")
