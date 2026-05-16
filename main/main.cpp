@@ -44,6 +44,17 @@ esp_err_t updateNvsFlash(std::string tag, std::string space, std::string key, st
     return nvsRmt.SetStr(key, value);
 }
 
+void switchAllOff(RmtIr* rmtIr) {
+        // YAMAHA Receiver
+        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // Panasonic TV
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // Pioneer DVD Player
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift"
+}
+
 // Callback function for BUTTON_SINGLE_CLICK event from onBoardButton
 extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data)
 {
@@ -55,14 +66,14 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
     state = !state;
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
     if (!state) {
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        switchAllOff(rmtIr);
         activeScene = "OFF";
     }
     else {
+        // YAMAHA receiver
         rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x037c); // "TV Scene"
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // Panasonic TV
         rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x7c); // "Power On"
         vTaskDelay(pdMS_TO_TICKS(4000)); // delay 4 seconds
         rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x40, 0x0c); // "TV"
@@ -87,20 +98,55 @@ extern "C" void callback_onBoardButton_BUTTON_DOUBLE_CLICK(void *arg, void *data
     ESP_LOGI(tag, "state = %d", state);
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
     if (!state) {
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
+        switchAllOff(rmtIr);
+        activeScene = "OFF";
+    }
+    else {
+        // YAMAHA receiver
+        rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x0976); // "TV Scene"
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        // Panasonic TV
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x7c); // "Power On"
+        vTaskDelay(pdMS_TO_TICKS(2000)); // delay 2 seconds
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x20, 0x0d); // "HDMI1" (direct)
+        activeScene = "AppleTV";
+    }
+
+    updateNvsFlash(std::string("nvsRmt"), std::string("rmt"), std::string("state"), state);
+    ESP_LOGI(tag, "state = %d", state);
+    updateNvsFlash(std::string("nvsRmt"), std::string("rmt"), std::string("activeScene"), activeScene);
+    ESP_LOGI(tag, "activeScene = %s", activeScene.c_str());
+}
+
+// Callback function for BUTTON_MULTIPLE_CLICK_3 event from onBoardButton
+extern "C" void callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3(void *arg, void *data)
+{
+    ESP_LOGI("onBoardButton Callback", "for Event BUTTON_MULTIPLE_CLICK_3 called!");
+
+    iot_button_print_event((button_handle_t)arg);
+
+    // bei jedem BUTTON_MULTIPLE_CLICK_3 wird der DVD-Spieler ein-/ausgeschaltet
+    state = !state;
+    ESP_LOGI(tag, "state = %d", state);
+    RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+    if (!state) {
+        switchAllOff(rmtIr);
         activeScene = "OFF";
    }
     else {
-        rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x0976); // "TV Scene"
+        // YAMAHA Receiver
+        rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x007f); // "BD/DVD Scene"
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // Pioneer DVD Player
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xba); // "ON"
+        vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xb6); // "OPEN/CLOSE"
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // Panasonic TV
         rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x7c); // "Power On"
-        vTaskDelay(pdMS_TO_TICKS(2000)); // delay 2 seconds
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xa0); // "AV" (HDMI1)
-        vTaskDelay(pdMS_TO_TICKS(2000)); // delay 2 seconds
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x92); // "OK"
-        activeScene = "AppleTV";
+        vTaskDelay(pdMS_TO_TICKS(4000)); // delay 4 seconds
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x40); // "AV2" (direct)
+        activeScene = "DVD";
     }
 
     updateNvsFlash(std::string("nvsRmt"), std::string("rmt"), std::string("state"), state);
@@ -122,9 +168,7 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_START_1000(void *arg, v
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
 
     if (!state) {
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        switchAllOff(rmtIr);
         activeScene = "OFF";
     }
     else {
@@ -166,12 +210,18 @@ extern "C" void app_main(void)
 
     onBoardButton.RegisterCallbackForEvent(BUTTON_SINGLE_CLICK, callback_onBoardButton_BUTTON_SINGLE_CLICK);
     onBoardButton.RegisterCallbackForEvent(BUTTON_DOUBLE_CLICK, callback_onBoardButton_BUTTON_DOUBLE_CLICK);
-    button_event_args_t args = {
+    button_event_args_t press_time = {
        { // long_press
            1000, // press_time
        }
     };
-    onBoardButton.RegisterCallbackForEvent(BUTTON_LONG_PRESS_START, &args, callback_onBoardButton_BUTTON_LONG_PRESS_START_1000);
+    onBoardButton.RegisterCallbackForEvent(BUTTON_LONG_PRESS_START, &press_time, callback_onBoardButton_BUTTON_LONG_PRESS_START_1000);
+    button_event_args_t clicks = {
+       { // multiple_clicks
+           3, // clicks
+       }
+    };
+    onBoardButton.RegisterCallbackForEvent(BUTTON_MULTIPLE_CLICK, &clicks, callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3);
 
     // read state and activeScene from nvs_flash
     {
