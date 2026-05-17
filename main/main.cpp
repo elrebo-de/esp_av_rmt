@@ -1,5 +1,7 @@
-/*
- * Example program to use rmt_ir functionality with elrebo-de/esp_rmt_ir
+/* Example program using
+   * elrebo-de/esp_rmt_ir for rmt_ir functionality
+   * elrebo-de/generic_button for onBoard button functionality
+   * elrebo-de/generic_nvsflash for storing data in NvsFlash
  */
 
 #include <string>
@@ -18,18 +20,18 @@ bool state = false;
 bool yamahaReceiver = false;
 bool panasonicTv = false;
 bool pioneerDvd = false;
-std::string activeScene = "OFF"; // {OFF, TV, AppleTV, Radio}
+std::string activeScene = "OFF"; // {OFF, TV, AppleTV, Radio, DVD}
 
 // read value of key from NvsFlash
 uint8_t readNvsFlashU8(std::string tag, std::string space, std::string key, esp_err_t *ret)
 {
-    /* Open NVS flash Namespace for read operations */
+    /* Open NvsFlash namespace for read operations */
     GenericNvsFlash nvsRmt(tag, space, NVS_READONLY);
     return nvsRmt.GetU8(key, ret);
 }
 std::string readNvsFlashString(std::string tag, std::string space, std::string key, esp_err_t *ret)
 {
-    /* Open NVS flash Namespace for read operations */
+    /* Open NvsFlash namespace for read operations */
     GenericNvsFlash nvsRmt(tag, space, NVS_READONLY);
     return nvsRmt.GetStr(key, ret);
 }
@@ -57,12 +59,14 @@ esp_err_t updateNvsFlash(std::string tag, std::string space, std::string key, ui
     return nvsRmt.SetU8(key, value);
 }
 
+// update value of key in NvsFlash
 esp_err_t updateNvsFlash(std::string tag, std::string space, std::string key, std::string value)
 {
     GenericNvsFlash nvsRmt(tag, space, NVS_READWRITE);
     return nvsRmt.SetStr(key, value);
 }
 
+// update data in NvsFlash
 void updateDataInNvsFlash() {
     updateNvsFlash(std::string("nvsRmt"), std::string("rmt"), std::string("state"), state);
     ESP_LOGI(tag, "state = %d", state);
@@ -76,28 +80,6 @@ void updateDataInNvsFlash() {
     ESP_LOGI(tag, "activeScene = %s", activeScene.c_str());
 }
 
-void switchAllOff(RmtIr* rmtIr) {
-    // YAMAHA Receiver
-    if (yamahaReceiver == true) {
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
-        yamahaReceiver = false;
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-    }
-    // Panasonic TV
-    if (panasonicTv == true) {
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
-        panasonicTv = false;
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-    }
-        // Pioneer DVD Player
-    if (pioneerDvd == true) {
-        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
-        pioneerDvd = false;
-    }
-    activeScene = "OFF";
-    state = false;
-}
-
 // Callback function for BUTTON_SINGLE_CLICK event from onBoardButton
 extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data)
 {
@@ -105,10 +87,11 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
 
     iot_button_print_event((button_handle_t)arg);
 
-    // bei jedem BUTTON_SINGLE_CLICK wird der Fernseher eingeschaltet
+    // BUTTON_SINGLE_CLICK: switch on Panasonic TV and YAMAHA receiver for watching TV
     state = true;
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
     if (pioneerDvd == true) {
+        // Pioneer DVD Player
         rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
         pioneerDvd = false;
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
@@ -119,7 +102,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
         panasonicTv = true;
         vTaskDelay(pdMS_TO_TICKS(2000)); // delay 2 seconds
     }
-    // YAMAHA receiver
+    // YAMAHA Receiver
     rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x037c); // "TV Scene"
     yamahaReceiver = true;
     vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
@@ -137,12 +120,13 @@ extern "C" void callback_onBoardButton_BUTTON_DOUBLE_CLICK(void *arg, void *data
 
     iot_button_print_event((button_handle_t)arg);
 
-    // bei jedem BUTTON_DOUBLE_CLICK wird der Eingang für AppleTV eingeschaltet
+    // BUTTON_DOUBLE_CLICK: switch on Panasonic TV and YAMAHA receiver for AppleTV
     state = true;
     ESP_LOGI(tag, "state = %d", state);
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
 
     if (pioneerDvd == true) {
+        // Pioneer DVD Player
         rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
         pioneerDvd = false;
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
@@ -153,7 +137,7 @@ extern "C" void callback_onBoardButton_BUTTON_DOUBLE_CLICK(void *arg, void *data
         panasonicTv = true;
         vTaskDelay(pdMS_TO_TICKS(2000)); // delay 2 seconds
     }
-    // YAMAHA receiver
+    // YAMAHA Receiver
     rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x0976); // "Radio Scene" (AppleTV)
     yamahaReceiver = true;
     vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
@@ -171,7 +155,7 @@ extern "C" void callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3(void *arg, void *
 
     iot_button_print_event((button_handle_t)arg);
 
-    // bei jedem BUTTON_MULTIPLE_CLICK_3 wird der DVD-Spieler eingeschaltet
+    // BUTTON_MULTIPLE_CLICK_3: switch on Pioneer DVD Player, Panasonic TV and YAMAHA Receiver for watching a DVD
     state = true;
     ESP_LOGI(tag, "state = %d", state);
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
@@ -213,30 +197,30 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_UP(void *arg, void *dat
 
     // BUTTON_LONG_PRESS_UP_1000 -> select Tuner
 
-    // bei jedem BUTTON_LONG_PRESS_UP_1000 wird der Tuner eingeschaltet
+    // BUTTON_LONG_PRESS_UP with pressedTime 1000 ms: switch on Tuner
     state = true;
     ESP_LOGI(tag, "state = %d", state);
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
 
     if (yamahaReceiver == false) {
+        // YAMAHA Receiver
         rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1d); // "POWER ON"
         yamahaReceiver = true;
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
     }
-
     if (pioneerDvd == true) {
+        // Pioneer DVD Player
         rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
         pioneerDvd = false;
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
     }
-
-    // Panasonic TV
     if (panasonicTv == true) {
+        // Panasonic TV
         rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
         panasonicTv = false;
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
     }
-
+    // YAMAHA Receiver
     rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x16); // "Tuner"
     activeScene = "Radio";
 
@@ -250,12 +234,30 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_START_3000(void *arg, v
 
     iot_button_print_event((button_handle_t)arg);
 
-    // bei jedem BUTTON_LONG_PRESS_START_3000 wird alles ausgeschaltet
+    // BUTTON_LONG_PRESS_START_3000: everything is switched off
     state = false;
     ESP_LOGI(tag, "state = %d", state);
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
 
-    switchAllOff(rmtIr);
+    if (yamahaReceiver == true) {
+        // YAMAHA Receiver
+        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
+        yamahaReceiver = false;
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    }
+    if (panasonicTv == true) {
+        // Panasonic TV
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        panasonicTv = false;
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    }
+    if (pioneerDvd == true) {
+        // Pioneer DVD Player
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
+        pioneerDvd = false;
+    }
+    activeScene = "OFF";
+    state = false;
 
     updateDataInNvsFlash();
 }
@@ -263,7 +265,6 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_START_3000(void *arg, v
 extern "C" void app_main(void)
 {
     // short delay to reconnect logging
-
     vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
 
     ESP_LOGI(tag, "Example Program");
