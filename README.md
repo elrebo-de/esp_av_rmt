@@ -1,25 +1,29 @@
-## ESP  AV RMT - A Remote Controller for a YAMAHA Audio Receiver, a PANASONIC Television and an Apple TV
+## ESP  AV RMT - A Remote Controller for a YAMAHA Audio Receiver, a PANASONIC Television, a Pioneer DVD Player and an Apple TV
 
-We create a remote controller to power on/off 
-* the PANASONIC TV and 
-* the YAMAHA Audio Receiver 
+We create a remote controller to power on 
+* the Panasonic TV,
+* the YAMAHA Audio Receiver and
+* the Pioneer DVD Player
 
 with a button click
 and choose the right settings for
 * watching TV (SINGLE CLICK),
-* watching Apple TV (DOUBLE CLICK) or
-* listening to the Radio (LONG CLICK).
+* watching Apple TV (DOUBLE CLICK),
+* watching DVDs or listening to CDs (TRIPLE CLICK),
+* listening to the Radio (LONG PRESS UP (1 second press time)) or
+* switching everything off (LONG PRESS START (3 seconds press time))
 
 ## Hardware
 to be controlled:
 
 * YAMAHA Audio Receiver
-* PANASONIC TV
-* Apple TV
+* Panasonic TV
+* Pioneer DVD Player
+* (Apple TV)  
 
 for the Remote Controller:
 
-* ESP-C3 Supermini or M5 ATOM LITE ESP32 and optional M5 Tailbat Battery
+* ESP-C3 Supermini SoC or M5 Atom Lite ESP32 SoC and optional M5 Tailbat Battery
 * seeed Grove IR sender
 
 ## Build and Flash
@@ -36,14 +40,14 @@ Build the project and flash it to the board, then run the monitor tool to view t
 See the Getting Started Guide for all the steps to configure and use the ESP-IDF to build projects.
 
 ## Function
-The onboard button on the ESP32C3 Supermini is used to control the devices.
+The onboard button on the ESP32C3 Supermini or the M5 Atom Lite is used to control the devices.
 
-A single click powers on/off the TV and the Receiver for watching TV.
+A single click powers on the TV and the Receiver for watching TV.
 
-A double click powers on/off the TV and the Receiver for watching Apple TV.
+A double click powers on the TV and the Receiver for watching Apple TV.
 
-A long click power on/off the Receiver to listen to the Radio.
+A triple click powers on the DVD Player, the TV and the Receiver for watching DVDs or listening to CDs.
 
-At power-on TV and Receiver are switched on with the IR Remote Controller and then the right configuration is set.
+A long press of 1 second press time powers on the Receiver to listen to the Radio.
 
-At power-off the TV and Receiver are switched to stand-by with the IR Remote Controller.
+A longer press of 3 seconds press time powers off everything.
