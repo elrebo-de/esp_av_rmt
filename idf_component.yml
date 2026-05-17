@@ -1,7 +1,7 @@
-version: "1.0.4"
+version: "1.0.5"
 license: "Apache2.0"
 description: "ESP AV RMT - A Remote Controller for a YAMAHA Audio Receiver, a PANASONIC Television, a Pioneer DVD Player and an Apple TV"
-url: "https://elrebo.de/index.php/2026/05/05/av_rmt/"
+url: "https://elrebo.de/index.php/2026/05/18/av_rmt/"
 issues: "https://github.com/elrebo-de/esp_av_rmt/issues"
 repository: "https://github.com/elrebo-de/esp_av_rmt.git"
 maintainers:
@@ -10,3 +10,6 @@ files:
   use_gitignore: true
 dependencies:
   idf: ">=5.5.0"
+  elrebo-de/generic_button: ~1.0.8
+  elrebo-de/generic_nvsflash: ~1.0.23
+  elrebo-de/rmt_ir: ~1.2.2
