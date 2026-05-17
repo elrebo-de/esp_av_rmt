@@ -202,12 +202,16 @@ extern "C" void callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3(void *arg, void *
     updateDataInNvsFlash();
 }
 
-// Callback function for BUTTON_LONG_PRESS_UP_1000 event from onBoardButton
-extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_UP_1000(void *arg, void *data)
+// Callback function for BUTTON_LONG_PRESS_UP events from onBoardButton
+extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_UP(void *arg, void *data)
 {
-    ESP_LOGI("onBoardButton Callback", "for Event BUTTON_LONG_PRESS_UP_1000 called!");
+    ESP_LOGI("onBoardButton Callback", "for Event BUTTON_LONG_PRESS_UP called!");
 
     iot_button_print_event((button_handle_t)arg);
+    uint32_t pressedTime = iot_button_get_pressed_time((button_handle_t)arg);
+    if (pressedTime > 2000) return;
+
+    // BUTTON_LONG_PRESS_UP_1000 -> select Tuner
 
     // bei jedem BUTTON_LONG_PRESS_UP_1000 wird der Tuner eingeschaltet
     state = true;
@@ -287,7 +291,7 @@ extern "C" void app_main(void)
            1000, // press_time
        }
     };
-    onBoardButton.RegisterCallbackForEvent(BUTTON_LONG_PRESS_UP, &press_time_1000, callback_onBoardButton_BUTTON_LONG_PRESS_UP_1000);
+    onBoardButton.RegisterCallbackForEvent(BUTTON_LONG_PRESS_UP, &press_time_1000, callback_onBoardButton_BUTTON_LONG_PRESS_UP);
     button_event_args_t press_time_3000 = {
        { // long_press
            3000, // press_time
