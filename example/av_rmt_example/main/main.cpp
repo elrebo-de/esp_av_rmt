@@ -9,8 +9,18 @@
 #include "esp_log.h"
 
 #include "av_rmt.hpp"
+#include "onboard_led.hpp"
+#include "generic_button.hpp"
+#include "deep_sleep.hpp"
+RTC_DATA_ATTR int bootCount = 0;
 
 const char *tag = "ESP AV RMT";
+
+// flag to signal to go to DeepSleep
+bool finished = false;
+
+// OnBoardLed
+OnBoardLed* onBoardLed = NULL;
 
 // Callback function for BUTTON_SINGLE_CLICK event from onBoardButton
 extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data)
@@ -20,8 +30,14 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
     iot_button_print_event((button_handle_t)arg);
 
     // BUTTON_SINGLE_CLICK: switch on Panasonic TV and YAMAHA receiver for watching TV
+    onBoardLed->setLedPixelColor(0, 0, 16, 0); // pixel 0, color green, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
+
     AvRmt *avRmt = &AvRmt::getInstance();
     avRmt->switchOnTv();
+
+    finished = true;
 }
 
 // Callback function for BUTTON_DOUBLE_CLICK event from onBoardButton
@@ -32,8 +48,14 @@ extern "C" void callback_onBoardButton_BUTTON_DOUBLE_CLICK(void *arg, void *data
     iot_button_print_event((button_handle_t)arg);
 
     // BUTTON_DOUBLE_CLICK: switch on Panasonic TV and YAMAHA receiver for AppleTV
+    onBoardLed->setLedPixelColor(0, 0, 0, 16); // pixel 0, color blue, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
+
     AvRmt *avRmt = &AvRmt::getInstance();
     avRmt->switchOnAppleTv();
+
+    finished = true;
 }
 
 // Callback function for BUTTON_MULTIPLE_CLICK_3 event from onBoardButton
@@ -44,8 +66,14 @@ extern "C" void callback_onBoardButton_BUTTON_MULTIPLE_CLICK_3(void *arg, void *
     iot_button_print_event((button_handle_t)arg);
 
     // BUTTON_MULTIPLE_CLICK_3: switch on Pioneer DVD Player, Panasonic TV and YAMAHA Receiver for watching a DVD
+    onBoardLed->setLedPixelColor(0, 16, 16, 0); // pixel 0, color yellow, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
+
     AvRmt *avRmt = &AvRmt::getInstance();
     avRmt->switchOnDvd();
+
+    finished = true;
 }
 
 // Callback function for BUTTON_LONG_PRESS_UP events from onBoardButton
@@ -60,8 +88,14 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_UP(void *arg, void *dat
     // BUTTON_LONG_PRESS_UP_1000 -> select Tuner
 
     // BUTTON_LONG_PRESS_UP with pressedTime 1000 ms: switch on Tuner
+    onBoardLed->setLedPixelColor(0, 16, 0, 16); // pixel 0, color pink, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
+
     AvRmt *avRmt = &AvRmt::getInstance();
     avRmt->switchOnRadio();
+
+    finished = true;
 }
 
 // Callback function for BUTTON_LONG_PRESS_UP event from onBoardButton
@@ -72,16 +106,46 @@ extern "C" void callback_onBoardButton_BUTTON_LONG_PRESS_START_3000(void *arg, v
     iot_button_print_event((button_handle_t)arg);
 
     // BUTTON_LONG_PRESS_START_3000: everything is switched off
+    onBoardLed->setLedPixelColor(0, 16, 0, 0); // pixel 0, color red, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
+
     AvRmt *avRmt = &AvRmt::getInstance();
     avRmt->switchAllOff();
+
+    finished = true;
 }
 
 extern "C" void app_main(void)
 {
     // short delay to reconnect logging
-    vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    //vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
 
     ESP_LOGI(tag, "Program Start");
+
+    ESP_LOGI(tag, "Initialize OnBoardLed class");
+
+    /* M5 Atom Lite */
+    onBoardLed = new OnBoardLed(
+		std::string("onBoardLed"),
+		(gpio_num_t) 27,
+		std::string("GRB"),
+		std::string("RMT"),
+		LED_MODEL_WS2812,
+		500);
+	// */
+
+    /* ESP32C3 Supermini
+    onBoardLed = new OnBoardLed(
+		std::string("onBoardLed"),
+	    (gpio_num_t) 8,
+        (uint8_t) 0, // activeLevel
+		500);
+    // */
+
+    onBoardLed->setLedPixelColor(0, 16, 16, 16); // pixel 0, color white, intensity 16/256
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
 
     ESP_LOGI(tag, "Initialize GenericButton class");
     GenericButton* onBoardButton = new GenericButton(
@@ -117,8 +181,8 @@ extern "C" void app_main(void)
 
     ESP_LOGI(tag, "Initialize RmtIr class");
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
-    //rmtIr->setGpioPins(4,0); // set the GPIO pins for ESP32C3 Supermini
     rmtIr->setGpioPins(32,0); // set the GPIO pins for M5 ATOM LITE
+    //rmtIr->setGpioPins(4,0); // set the GPIO pins for ESP32C3 Supermini
     rmtIr->initialize(); // initialize RMT IR
 
     ESP_LOGI(tag, "Initialize AvRmt class");
@@ -126,9 +190,32 @@ extern "C" void app_main(void)
 
     avRmt->initialize(rmtIr);
 
-    ESP_LOGI(tag, "Endless Loop");
-    while(1) {
-        vTaskDelay(pdMS_TO_TICKS(30000)); // delay 30 seconds
+    /* Initialize DeepSleep class */
+    ESP_LOGI(tag, "Initialize DeepSleep class");
+    DeepSleep deepSleep(
+		std::string("DeepSleep"), // tag
+		&bootCount // Address of int bootCount in RTC_DATA
+    );
+
+    ESP_LOGI(tag, "Loop until finished");
+    while(!finished) {
+        vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
     }
 
+    // go to DeepSleep
+    vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
+    onBoardLed->setLedState(0);
+    onBoardLed->show();
+
+
+    bool rc = false;
+
+    ESP_LOGI(tag, "EnableGpioWakeup");
+    ESP_ERROR_CHECK(deepSleep.EnableGpioWakeup((gpio_num_t) 39, 0));  // enable wake up when GPIO 39 is pulled down
+
+    ESP_LOGI(tag, "GoToDeepSleep");
+    rc = deepSleep.GoToDeepSleep(); // go to deep sleep
+
+    // this statement will not be reached, if GoToDeepSleep is working
+    ESP_LOGI(tag, "GoToDeepSleep rc=%u", rc);
 }

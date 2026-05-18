@@ -15,8 +15,6 @@
 #include "esp_log.h"
 
 #include "rmt_ir.hpp"
-#include "generic_button.hpp"
-#include <iot_button.h>
 
 
 /* class AvRmt

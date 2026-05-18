@@ -36,23 +36,17 @@ void AvRmt::switchAllOff() {
     state = false;
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
 
-    if (yamahaReceiver == true) {
-        // YAMAHA Receiver
-        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
-        yamahaReceiver = false;
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-    }
-    if (panasonicTv == true) {
-        // Panasonic TV
-        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
-        panasonicTv = false;
-        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
-    }
-    if (pioneerDvd == true) {
-        // Pioneer DVD Player
-        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
-        pioneerDvd = false;
-    }
+    // YAMAHA Receiver
+    rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1e); // "STANDBY"
+    yamahaReceiver = false;
+    vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    // Panasonic TV
+    rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+    panasonicTv = false;
+    vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    // Pioneer DVD Player
+    rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
+    pioneerDvd = false;
     activeScene = "OFF";
     state = false;
 
