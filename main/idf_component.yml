@@ -1,6 +1,0 @@
-version: 1.0.4
-dependencies:
-  idf: '>=5.5.0'
-  elrebo-de/generic_button: ~1.0.8
-  elrebo-de/generic_nvsflash: ~1.0.23
-  elrebo-de/rmt_ir: ~1.2.2

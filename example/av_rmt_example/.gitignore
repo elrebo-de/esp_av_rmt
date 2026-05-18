@@ -32,5 +32,11 @@
 *.out
 *.app
 
-dist/
-.idea/
+# Directories
+build/
+managed_components/
+
+dependencies.lock
+sdkconfig.old
+sdkconfig
+
