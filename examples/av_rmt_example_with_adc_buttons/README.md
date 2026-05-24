@@ -7,11 +7,11 @@ We create a remote controller to power on
 
 with a button click
 and choose the right settings for
-* watching TV (SINGLE CLICK) color: green,
-* watching Apple TV (DOUBLE CLICK) color: blue,
-* watching DVDs or listening to CDs (TRIPLE CLICK) color: yellow,
-* listening to the Radio (LONG PRESS UP (1 second press time)) color: pink or
-* switching everything off (LONG PRESS START (3 seconds press time)) color: red
+* watching TV (red button) color: red,
+* watching Apple TV (yellow button) color: yellow,
+* watching DVDs or listening to CDs (green button) color: green,
+* listening to the Radio (blue button) color: blue or
+* switching everything off (black button) color: white
 
 ## Hardware
 to be controlled:
@@ -23,8 +23,11 @@ to be controlled:
 
 for the Remote Controller:
 
-* ESP-C3 Supermini SoC or M5 Atom Lite ESP32 SoC and optional M5 Tailbat Battery
+* ESP-C3 Supermini SoC 
 * seeed Grove IR sender
+* 3.7 V LiPo battery
+* Charger board for 3.7V Li batteries, USB-C
+* Plastic package with 6 buttons (five of them are currently used)
 
 ## Build and Flash
 
@@ -40,20 +43,26 @@ Build the project and flash it to the board, then run the monitor tool to view t
 See the Getting Started Guide for all the steps to configure and use the ESP-IDF to build projects.
 
 ## Function
-The onboard button on the ESP32C3 Supermini or the M5 Atom Lite is used to control the devices.
+The six buttons in the package are connected to a resistor ladder which is used as input to ADC unit 1, ADC channel 0 on GPIO 0 of the ESPC3 Supermini board. 
+
+For every button a GenericButton instance is created and for the BUTTON_SINGLE_CLICK event a callback function is defined.
+
+For visual feedback the onboard LED is used. If the onboard LED is of type LED strip the color is changed according to the button pressed. This is unfortunately not true for the ESPC3 Supermini SoC.
 
 ### Actions
-A single click powers on the TV and the Receiver for watching TV - the onboard led lights green.
+A single click on the red button powers on the TV and the Receiver for watching TV - the onboard led lights red.
 
-A double click powers on the TV and the Receiver for watching Apple TV - the onboard led lights blue.
+A single click on the yellow button powers on the TV and the Receiver for watching Apple TV - the onboard led lights yellow.
 
-A triple click powers on the DVD Player, the TV and the Receiver for watching DVDs or listening to CDs the onboard led lights yellow.
+A single click on the green button powers on the DVD Player, the TV and the Receiver for watching DVDs or listening to CDs the onboard led lights green.
 
-A long press of 1 second press time powers on the Receiver to listen to the Radio - the onboard led lights pink.
+A single click on the blue button powers on the Receiver to listen to the Radio - the onboard led lights blue.
 
-A longer press of 3 seconds press time powers off everything - the onboard led lights red.
+A single click on the black button powers off everything - the onboard led lights white.
 
 ### DeepSleep
+(( not yet activated))
+
 The system goes to deep sleep after a command is executed - the onboard led goes off.
 
 To wake up from deep sleep the onboard button must be clicked - the onboard led lights white.  
