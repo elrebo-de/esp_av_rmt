@@ -125,7 +125,7 @@ extern "C" void app_main(void)
 
     ESP_LOGI(tag, "Initialize OnBoardLed class");
 
-    /* M5 Atom Lite */
+    /* M5 Atom Lite
     onBoardLed = new OnBoardLed(
 		std::string("onBoardLed"),
 		(gpio_num_t) 27,
@@ -135,7 +135,17 @@ extern "C" void app_main(void)
 		500);
 	// */
 
-    /* ESP32C3 Supermini
+     /* ESP32-C3 Zero */
+     onBoardLed = new OnBoardLed(
+ 		std::string("onBoardLed"),
+ 		(gpio_num_t) 10,
+ 		std::string("RGB"),
+ 		std::string("RMT"),
+ 		LED_MODEL_WS2812,
+ 		500);
+ 	// */
+
+     /* ESP32C3 Supermini
     onBoardLed = new OnBoardLed(
 		std::string("onBoardLed"),
 	    (gpio_num_t) 8,
@@ -148,13 +158,35 @@ extern "C" void app_main(void)
     onBoardLed->show();
 
     ESP_LOGI(tag, "Initialize GenericButton class");
+    // set GPIO onBoard button configuration
+    #if defined(CONFIG_IDF_TARGET_ESP32C6)
+    /* ESP32-C6-DevKitM-1 V1.0 */
+    button_gpio_config_t btn_gpio_cfg = {
+        .gpio_num = 9,
+        .active_level = 0,
+        .enable_power_save = false,
+        .disable_pull = false,
+    };
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    /* Waveshare ESP32-C3-Zero */
+    button_gpio_config_t btn_gpio_cfg = {
+        .gpio_num = 9,
+        .active_level = 0,
+        .enable_power_save = false,
+        .disable_pull = false,
+    };
+    #elif defined(CONFIG_IDF_TARGET_ESP32)
+    /* M5 Atom Lite */
+    button_gpio_config_t btn_gpio_cfg = {
+        .gpio_num = 39,
+        .active_level = 0,
+        .enable_power_save = false,
+        .disable_pull = true,
+    };
+    #endif
     GenericButton* onBoardButton = new GenericButton(
-	    std::string("onBoardButton"),
-	    (gpio_num_t) 39, // GPIO for M5 Atom Lite
-	    //(gpio_num_t) 9, // GPIO for ESP32C3 Supermini
-	    0, // active = DOWN
-	    true, // pull disabled - M5 Atom does not support internal PU/PD on this gpio
-	    std::string("GPIO")
+	   std::string("onBoardButton"),
+	   &btn_gpio_cfg
 	);
 
     // register Button Callbacks
@@ -181,8 +213,8 @@ extern "C" void app_main(void)
 
     ESP_LOGI(tag, "Initialize RmtIr class");
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
-    rmtIr->setGpioPins(32,0); // set the GPIO pins for M5 ATOM LITE
-    //rmtIr->setGpioPins(4,0); // set the GPIO pins for ESP32C3 Supermini
+    //rmtIr->setGpioPins(32,0); // set the GPIO pins for M5 ATOM LITE
+    rmtIr->setGpioPins(3,0); // set the GPIO pins for ESP32C3 Supermini
     rmtIr->initialize(); // initialize RMT IR
 
     ESP_LOGI(tag, "Initialize AvRmt class");
@@ -211,7 +243,8 @@ extern "C" void app_main(void)
     bool rc = false;
 
     ESP_LOGI(tag, "EnableGpioWakeup");
-    ESP_ERROR_CHECK(deepSleep.EnableGpioWakeup((gpio_num_t) 39, 0));  // enable wake up when GPIO 39 is pulled down
+    //ESP_ERROR_CHECK(deepSleep.EnableGpioWakeup((gpio_num_t) 39, 0));  // enable wake up when GPIO 39 is pulled down
+    ESP_ERROR_CHECK(deepSleep.EnableGpioWakeup((gpio_num_t) 9, 0));  // enable wake up when GPIO 9 is pulled down
 
     ESP_LOGI(tag, "GoToDeepSleep");
     rc = deepSleep.GoToDeepSleep(); // go to deep sleep

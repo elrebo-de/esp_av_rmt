@@ -140,6 +140,31 @@ void AvRmt::switchOnDvd() {
     updateDataInNvsFlash();
 }
 
+void AvRmt::switchOnRecordPlayer(){
+    ESP_LOGI(tag.c_str(), "switchOnRecordPlayer");
+    state = true;
+    RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+    if (pioneerDvd == true) {
+        // Pioneer DVD Player
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x99, (uint8_t)0xaf, (uint8_t)0xbb); // "Shift + OFF"
+        pioneerDvd = false;
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    }
+    if (panasonicTv == true) {
+        // Panasonic TV
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xfc); // "Power Off"
+        panasonicTv = false;
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+    }
+    // YAMAHA Receiver
+    rmtIr->transmitNecCommandFrame((uint16_t)0x7a85, (uint16_t)0x0679); // "CD Scene"
+    yamahaReceiver = true;
+
+    activeScene = "RecordPlayer";
+
+    updateDataInNvsFlash();
+}
+
 void AvRmt::switchOnRadio() {
     ESP_LOGI(tag.c_str(), "switchOnRadio");
     state = true;

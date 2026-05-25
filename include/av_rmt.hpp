@@ -41,6 +41,7 @@ class AvRmt
         void switchOnAppleTv();
         void switchOnDvd();
         void switchOnRadio();
+        void switchOnRecordPlayer();
 
     private:
         AvRmt() {}                 // Constructor

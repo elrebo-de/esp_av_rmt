@@ -73,7 +73,16 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
 
             avRmt->switchAllOff();
             break;
+        case 0:
+            // buttonIndex == 0: switch on YAMAHA receiver for DUAL record player
+            onBoardLed->setLedPixelColor(0, 0, 16, 16); // pixel 0, color pink, intensity 16/256
+            onBoardLed->setLedState(1);
+            onBoardLed->show();
+
+            avRmt->switchOnRecordPlayer();
+            break;
     }
+    finished = true;
 }
 
 extern "C" void app_main(void)
@@ -95,7 +104,17 @@ extern "C" void app_main(void)
 		500);
 	// */
 
-    /* ESP32C3 Supermini */
+    /* ESP32C3 Waveshare Zero */
+    onBoardLed = new OnBoardLed(
+		std::string("onBoardLed"),
+		(gpio_num_t) 10,
+		std::string("RGB"),
+		std::string("RMT"),
+		LED_MODEL_WS2812,
+		500);
+	// */
+
+    /* ESP32C3 Supermini
     onBoardLed = new OnBoardLed(
 		std::string("onBoardLed"),
 	    (gpio_num_t) 8,
@@ -192,7 +211,8 @@ extern "C" void app_main(void)
     ESP_LOGI(tag, "Initialize RmtIr class");
     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
     //rmtIr->setGpioPins(32,0); // set the GPIO pins for M5 ATOM LITE
-    rmtIr->setGpioPins(10,0); // set the GPIO pins for ESP32C3 Supermini
+    //rmtIr->setGpioPins(10,0); // set the GPIO pins for ESP32C3 Supermini
+    rmtIr->setGpioPins(3,0); // set the GPIO pins for ESP32C3 Waveshare Zero
     rmtIr->initialize(); // initialize RMT IR
 
     ESP_LOGI(tag, "Initialize AvRmt class");
@@ -221,7 +241,7 @@ extern "C" void app_main(void)
     bool rc = false;
 
     ESP_LOGI(tag, "EnableGpioWakeup");
-    ESP_ERROR_CHECK(deepSleep.EnableGpioWakeup((gpio_num_t) 0, 0));  // enable wake up when GPIO 0 is pulled down
+    ESP_ERROR_CHECK(deepSleep.EnableAdcWakeup((gpio_num_t) 0, 0));  // enable wake up when ADC GPIO 0 is pulled down
 
     ESP_LOGI(tag, "GoToDeepSleep");
     rc = deepSleep.GoToDeepSleep(); // go to deep sleep
