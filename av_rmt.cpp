@@ -228,7 +228,7 @@ void AvRmt::goToNextChannel() {
     }
     else if (activeScene == "DVD") {
         // go to next title on CD/DVD
-        rmtIr->transmitNecCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next"
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next"
     }
     else if (activeScene == "Radio") {
         // go to next preset station
@@ -258,7 +258,7 @@ void AvRmt::goToPreviousChannel() {
     else if (activeScene == "DVD") {
         // go to previous title on CD/DVD
         // first "Previous" command goes to beginning of current title
-        rmtIr->transmitNecCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous"
+        rmtIr->transmitPioneerCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous"
         // wait a moment
         vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
         // second "Previous" command goes to beginning of previous title
