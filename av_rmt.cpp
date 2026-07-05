@@ -196,6 +196,86 @@ void AvRmt::switchOnRadio() {
     updateDataInNvsFlash();
 }
 
+void AvRmt::incrementVolume() {
+     ESP_LOGI(tag.c_str(), "incrementVolume");
+     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+
+     // YAMAHA Receiver
+     rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1a); // "Volume Up"
+}
+
+void AvRmt::decrementVolume() {
+     ESP_LOGI(tag.c_str(), "decrementVolume");
+     RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+
+     // YAMAHA Receiver
+     rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x1b); // "Volume Down"
+}
+
+void AvRmt::goToNextChannel() {
+    ESP_LOGI(tag.c_str(), "goToNextChannel");
+    RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+
+    if (activeScene == "OFF") {
+        // nothing to do
+    }
+    else if (activeScene == "TV") {
+        // go to next TV channel
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0x2c); // "Channel Up"
+    }
+    else if (activeScene == "AppleTV") {
+        // nothing to do (not implemented)
+    }
+    else if (activeScene == "DVD") {
+        // go to next title on CD/DVD
+        rmtIr->transmitNecCommandFrame((uint8_t)0xa3, (uint8_t)0x9c); // "Next"
+    }
+    else if (activeScene == "Radio") {
+        // go to next preset station
+        // YAMAHA Receiver
+        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x10); // "Next Preset Station"
+    }
+    else if (activeScene == "RecordPlayer") {
+        // nothing to do;
+    }
+
+}
+
+void AvRmt::goToPreviousChannel() {
+    ESP_LOGI(tag.c_str(), "goToPreviousChannel");
+    RmtIr* rmtIr = &rmtIr->getInstance(); // get the Singleton instance
+
+    if (activeScene == "OFF") {
+        // nothing to do
+    }
+    else if (activeScene == "TV") {
+        // go to previous TV channel
+        rmtIr->transmitPanasonicCommandFrame(0x4004, 0x01, 0x00, 0xac); // "Channel Down"
+    }
+    else if (activeScene == "AppleTV") {
+        // nothing to do (not implemented)
+    }
+    else if (activeScene == "DVD") {
+        // go to previous title on CD/DVD
+        // first "Previous" command goes to beginning of current title
+        rmtIr->transmitNecCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous"
+        // wait a moment
+        vTaskDelay(pdMS_TO_TICKS(500)); // delay 0.5 seconds
+        // second "Previous" command goes to beginning of previous title
+        rmtIr->transmitNecCommandFrame((uint8_t)0xa3, (uint8_t)0x9d); // "Previous"
+
+    }
+    else if (activeScene == "Radio") {
+        // go to previous preset station
+        // YAMAHA Receiver
+        rmtIr->transmitNecCommandFrame((uint8_t)0x7a, (uint8_t)0x11); // "Previous Preset Station"
+    }
+    else if (activeScene == "RecordPlayer") {
+        // nothing to do;
+    }
+
+}
+
 // read value of key from NvsFlash
 uint8_t AvRmt::readNvsFlashU8(std::string tag, std::string space, std::string key, esp_err_t *ret)
 {
@@ -222,7 +302,7 @@ void AvRmt::readDataFromNvsFlash()
     ESP_LOGI(tag.c_str(), "panasonicTv = %d", panasonicTv);
     pioneerDvd = (bool) readNvsFlashU8(std::string("nvsRmt"), std::string("rmt"), std::string("pioneerDvd"), &ret);
     ESP_LOGI(tag.c_str(), "pioneerDvd = %d", pioneerDvd);
-    std::string activeScene = readNvsFlashString(std::string("nvsRmt"), std::string("rmt"), std::string("activeScene"), &ret);
+    activeScene = readNvsFlashString(std::string("nvsRmt"), std::string("rmt"), std::string("activeScene"), &ret);
     ESP_LOGI(tag.c_str(), "activeScene = %s", activeScene.c_str());
 }
 

@@ -42,6 +42,10 @@ class AvRmt
         void switchOnDvd();
         void switchOnRadio();
         void switchOnRecordPlayer();
+        void incrementVolume();
+        void decrementVolume();
+        void goToNextChannel();
+        void goToPreviousChannel();
 
     private:
         AvRmt() {}                 // Constructor

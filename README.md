@@ -6,6 +6,7 @@ It uses component elrebo-de/rmt_ir for these audio/video devices:
 * NEC protocol (used by YAMAHA audio receiver)
 * Panasonic protocol (used by PANASONIC VIERA TV)
 * Pioneer protocol (used by Pioneer DVD player)
+* 
 The component is implemented as C++ class `AvRmt`.
 
 ## Connecting the component and Usage
@@ -34,6 +35,10 @@ Now you can control the audio/video devices with these methods:
         void switchOnAppleTv();
         void switchOnDvd();
         void switchOnRadio();
+        void increaseVolume();
+        void decreaseVolume();
+        void goToNextChannel();
+        void goToPreviousChannel();
 ```
 
 ## API
@@ -68,6 +73,10 @@ class AvRmt
         void switchOnAppleTv();
         void switchOnDvd();
         void switchOnRadio();
+        void incrementVolume();
+        void decrementVolume();
+        void goToNextChannel();
+        void goToPreviousChannel();
 
     private:
         AvRmt() {}                 // Constructor

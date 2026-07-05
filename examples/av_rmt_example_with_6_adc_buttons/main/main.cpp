@@ -233,7 +233,7 @@ extern "C" void app_main(void)
     }
 
     // go to DeepSleep
-    vTaskDelay(pdMS_TO_TICKS(1000)); // delay 1 seconds
+    vTaskDelay(pdMS_TO_TICKS(30000)); // delay 30 seconds
     onBoardLed->setLedState(0);
     onBoardLed->show();
 
