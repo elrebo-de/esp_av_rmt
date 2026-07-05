@@ -61,8 +61,6 @@ A single click on the blue button powers on the Receiver to listen to the Radio 
 A single click on the black button powers off everything - the onboard led lights white.
 
 ### DeepSleep
-(( not yet activated))
-
 The system goes to deep sleep after a command is executed - the onboard led goes off.
 
 To wake up from deep sleep the onboard button must be clicked - the onboard led lights white.  

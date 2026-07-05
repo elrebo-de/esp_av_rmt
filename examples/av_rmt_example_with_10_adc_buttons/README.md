@@ -69,8 +69,6 @@ A single click on the right blue button powers on the Receiver to listen to the 
 A single click on the black button powers off everything - the onboard led lights white.
 
 ### DeepSleep
-(( not yet activated))
+The system goes to deep sleep when a command is executed after a delay of 30 seconds - the onboard led goes off.
 
-The system goes to deep sleep after a command is executed - the onboard led goes off.
-
-To wake up from deep sleep the onboard button must be clicked - the onboard led lights white.  
+To wake up from deep sleep the ADC button must be clicked - the onboard led lights white.  

@@ -6,7 +6,7 @@ It uses component elrebo-de/rmt_ir for these audio/video devices:
 * NEC protocol (used by YAMAHA audio receiver)
 * Panasonic protocol (used by PANASONIC VIERA TV)
 * Pioneer protocol (used by Pioneer DVD player)
-* 
+
 The component is implemented as C++ class `AvRmt`.
 
 ## Connecting the component and Usage
