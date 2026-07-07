@@ -11,7 +11,7 @@ and choose the right settings for
 * watching Apple TV (yellow button) color: yellow,
 * watching DVDs or listening to CDs (green button) color: green,
 * listening to the Radio (left blue button) color: blue or
-* listening to the Record Player (right blue button) color: blue or
+* listening to the Record Player (right blue button) color: cyan or
 * switching everything off (black button) color: white
 
 and 
@@ -64,7 +64,7 @@ A single click on the green button powers on the DVD Player, the TV and the Rece
 
 A single click on the left blue button powers on the Receiver to listen to the Radio - the onboard led lights blue.
 
-A single click on the right blue button powers on the Receiver to listen to the RecordPlayer - the onboard led lights blue.
+A single click on the right blue button powers on the Receiver to listen to the RecordPlayer - the onboard led lights cyan.
 
 A single click on the black button powers off everything - the onboard led lights white.
 

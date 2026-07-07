@@ -35,6 +35,8 @@ class AvRmt
         static AvRmt& getInstance();
         void initialize(RmtIr *rmtIr);
 
+        std::string getActiveScene();
+
         // Methods to control Audio/Video devices
         void switchAllOff();
         void switchOnTv();

@@ -55,7 +55,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 6:
             // buttonIndex == 6: switch on Panasonic TV and YAMAHA receiver for watching TV
-            onBoardLed->setLedPixelColor(0, 0, 0, 16); // pixel 0, color blue, intensity 16/256
+            onBoardLed->setLedPixelColor(0, 16, 0, 0); // pixel 0, color red, intensity 16/256
             onBoardLed->setLedState(1);
             onBoardLed->show();
 
@@ -63,7 +63,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 5:
             // buttonIndex == 5: switch on Panasonic TV and YAMAHA receiver for watching AppleTv
-            onBoardLed->setLedPixelColor(0, 0, 0, 16); // pixel 0, color blue, intensity 16/256
+            onBoardLed->setLedPixelColor(0, 16, 16, 0); // pixel 0, color yellow, intensity 16/256
             onBoardLed->setLedState(1);
             onBoardLed->show();
 
@@ -71,7 +71,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 4:
             // buttonIndex == 4: switch on Pioneer DVD Player, Panasonic TV and YAMAHA Receiver for watching a DVD
-            onBoardLed->setLedPixelColor(0, 16, 0, 0); // pixel 0, color red, intensity 16/256
+            onBoardLed->setLedPixelColor(0, 0, 16, 0); // pixel 0, color green, intensity 16/256
             onBoardLed->setLedState(1);
             onBoardLed->show();
 
@@ -79,7 +79,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 3:
             // buttonIndex == 3: switch on YAMAHA receiver for using the RecordPlayer
-            onBoardLed->setLedPixelColor(0, 16, 16, 0); // pixel 0, color yellow, intensity 16/256
+            onBoardLed->setLedPixelColor(0, 0, 16, 16); // pixel 0, color pink, intensity 16/256
             onBoardLed->setLedState(1);
             onBoardLed->show();
 
@@ -87,7 +87,7 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 2:
             // buttonIndex == 2: everything is switched off
-            onBoardLed->setLedPixelColor(0, 0, 16, 0); // pixel 0, color green, intensity 16/256
+            onBoardLed->setLedPixelColor(0, 16, 16, 16); // pixel 0, color green, intensity 16/256
             onBoardLed->setLedState(1);
             onBoardLed->show();
 
@@ -95,18 +95,10 @@ extern "C" void callback_onBoardButton_BUTTON_SINGLE_CLICK(void *arg, void *data
             break;
         case 1:
             // buttonIndex == 1: go to next channel
-            onBoardLed->setLedPixelColor(0, 16,16, 16); // pixel 0, color white, intensity 16/256
-            onBoardLed->setLedState(1);
-            onBoardLed->show();
-
             avRmt->goToNextChannel();
             break;
         case 0:
             // buttonIndex == 0: go to previous channel
-            onBoardLed->setLedPixelColor(0, 0, 16, 16); // pixel 0, color pink, intensity 16/256
-            onBoardLed->setLedState(1);
-            onBoardLed->show();
-
             avRmt->goToPreviousChannel();
             break;
     }
@@ -300,6 +292,29 @@ extern "C" void app_main(void)
     AvRmt* avRmt = &avRmt->getInstance(); // get the Singleton instance
 
     avRmt->initialize(rmtIr);
+
+    std::string activeScene = avRmt->getActiveScene();
+
+    if (activeScene == "OFF") {
+        onBoardLed->setLedPixelColor(0, 16, 16, 16); // pixel 0, color green, intensity 16/256
+    }
+    else if (activeScene == "TV") {
+        onBoardLed->setLedPixelColor(0, 16, 0, 0); // pixel 0, color red, intensity 16/256
+    }
+    else if (activeScene == "AppleTV") {
+        onBoardLed->setLedPixelColor(0, 16, 16, 0); // pixel 0, color yellow, intensity 16/256
+    }
+    else if (activeScene == "DVD") {
+        onBoardLed->setLedPixelColor(0, 0, 16, 0); // pixel 0, color green, intensity 16/256
+    }
+    else if (activeScene == "Radio") {
+        onBoardLed->setLedPixelColor(0, 0, 0, 16); // pixel 0, color blue, intensity 16/256
+    }
+    else if (activeScene == "RecordPlayer") {
+        onBoardLed->setLedPixelColor(0, 0, 16, 16); // pixel 0, color cyan, intensity 16/256
+    }
+    onBoardLed->setLedState(1);
+    onBoardLed->show();
 
     /* Initialize DeepSleep class */
     ESP_LOGI(tag, "Initialize DeepSleep class");

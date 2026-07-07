@@ -31,6 +31,10 @@ void AvRmt::initialize(RmtIr *rmtIr)
     this->readDataFromNvsFlash();
 }
 
+std::string AvRmt::getActiveScene() {
+    return activeScene;
+}
+
 void AvRmt::switchAllOff() {
     ESP_LOGI(tag.c_str(), "switchAllOff");
     state = false;
